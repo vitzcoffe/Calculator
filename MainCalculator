@@ -1,0 +1,176 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class Calculator extends JFrame implements ActionListener {
+
+    private JTextField pantalla;
+    private double numero1 = 0;
+    private String operador = "";
+    private boolean nuevaOperacion = true;
+
+    public Calculator() {
+
+        setTitle("Calculadora Java");
+        setSize(350, 500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setResizable(false);
+
+        setLayout(new BorderLayout(10, 10));
+        getContentPane().setBackground(new Color(25, 25, 35));
+
+        // Pantalla
+        pantalla = new JTextField("0");
+        pantalla.setFont(new Font("Arial", Font.BOLD, 35));
+        pantalla.setHorizontalAlignment(JTextField.RIGHT);
+        pantalla.setEditable(false);
+        pantalla.setBackground(new Color(40, 40, 55));
+        pantalla.setForeground(Color.WHITE);
+        pantalla.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
+
+        add(pantalla, BorderLayout.NORTH);
+
+        // Panel de botones
+        JPanel panel = new JPanel(new GridLayout(5, 4, 8, 8));
+        panel.setBackground(new Color(25, 25, 35));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        String[] botones = {
+            "C", "DEL", "%", "/",
+            "7", "8", "9", "*",
+            "4", "5", "6", "-",
+            "1", "2", "3", "+",
+            "0", ".", "=", " "
+        };
+
+        for (String texto : botones) {
+
+            JButton boton = new JButton(texto);
+            boton.setFont(new Font("Arial", Font.BOLD, 22));
+            boton.setFocusPainted(false);
+            boton.setBorderPainted(false);
+
+            if (texto.equals("=")) {
+                boton.setBackground(new Color(0, 180, 120));
+            } else if ("+-*/%".contains(texto) && texto.length() == 1
+                    || texto.equals("C") || texto.equals("DEL")) {
+                boton.setBackground(new Color(230, 120, 50));
+            } else {
+                boton.setBackground(new Color(55, 55, 75));
+            }
+
+            boton.setForeground(Color.WHITE);
+            boton.addActionListener(this);
+
+            panel.add(boton);
+        }
+
+        add(panel, BorderLayout.CENTER);
+
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        String valor = e.getActionCommand();
+
+        if (valor.matches("[0-9]")) {
+
+            if (nuevaOperacion || pantalla.getText().equals("0")) {
+                pantalla.setText(valor);
+                nuevaOperacion = false;
+            } else {
+                pantalla.setText(pantalla.getText() + valor);
+            }
+
+        } else if (valor.equals(".")) {
+
+            if (nuevaOperacion) {
+                pantalla.setText("0.");
+                nuevaOperacion = false;
+            } else if (!pantalla.getText().contains(".")) {
+                pantalla.setText(pantalla.getText() + ".");
+            }
+
+        } else if (valor.equals("C")) {
+
+            pantalla.setText("0");
+            numero1 = 0;
+            operador = "";
+            nuevaOperacion = true;
+
+        } else if (valor.equals("DEL")) {
+
+            String texto = pantalla.getText();
+
+            if (texto.length() > 1) {
+                pantalla.setText(texto.substring(0, texto.length() - 1));
+            } else {
+                pantalla.setText("0");
+            }
+
+        } else if (valor.equals("=")) {
+
+            if (!operador.isEmpty()) {
+                calcular();
+            }
+
+        } else if ("+-*/%".contains(valor) && valor.length() == 1) {
+
+            numero1 = Double.parseDouble(pantalla.getText());
+            operador = valor;
+            nuevaOperacion = true;
+        }
+    }
+
+    private void calcular() {
+
+        double numero2 = Double.parseDouble(pantalla.getText());
+        double resultado = 0;
+
+        switch (operador) {
+
+            case "+":
+                resultado = numero1 + numero2;
+                break;
+
+            case "-":
+                resultado = numero1 - numero2;
+                break;
+
+            case "*":
+                resultado = numero1 * numero2;
+                break;
+
+            case "/":
+                if (numero2 == 0) {
+                    pantalla.setText("Error");
+                    operador = "";
+                    nuevaOperacion = true;
+                    return;
+                }
+                resultado = numero1 / numero2;
+                break;
+
+            case "%":
+                resultado = numero1 % numero2;
+                break;
+        }
+
+        pantalla.setText(
+            resultado == (long) resultado
+                ? String.valueOf((long) resultado)
+                : String.valueOf(resultado)
+        );
+
+        operador = "";
+        nuevaOperacion = true;
+    }
+
+    public static void main(String[] args) {
+
+        SwingUtilities.invokeLater(() -> new Calculator());
+    }
+}
